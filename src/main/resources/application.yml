@@ -1,0 +1,86 @@
+server:
+  port: 8080
+  error:
+    include-message: always
+
+spring:
+  mail:
+    host: smtp.gmail.com
+    port: 587
+    username: absubhash07@gmail.com
+    password: guil rbep tuvz tkcy
+    protocol: smtp
+    properties:
+      mail.smtp.auth: true
+      mail.smtp.starttls.enable: true
+      mail.smtp.starttls.required: true
+
+  datasource:
+    url: jdbc:mysql://localhost:3306/roadsidehelp?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
+    username: root
+    password: Ab@128900
+    driver-class-name: com.mysql.cj.jdbc.Driver
+
+  jpa:
+    hibernate:
+      ddl-auto: none
+    show-sql: false
+    properties:
+      hibernate:
+        format_sql: true
+        dialect: org.hibernate.spatial.dialect.mysql.MySQLSpatialDialect
+        jdbc.time_zone: UTC
+
+  flyway:
+    enabled: true
+    baseline-on-migrate: true
+    locations: classpath:db/migration
+
+  data:
+    redis:
+      host: localhost
+      port: 6379
+      timeout: 2000ms
+
+  kafka:
+    bootstrap-servers: localhost:9092
+    producer:
+      retries: 3
+      batch-size: 16384
+      linger-ms: 5
+      buffer-memory: 33554432
+    consumer:
+      auto-offset-reset: earliest
+
+websocket:
+  message-broker:
+    prefix: /topic
+  app:
+    prefix: /app
+
+jwt:
+  secret: yD8p@3!H9kW4rQ2uZt7#GvC1sN5xP0$FbL8eR6mTqVhYjUo
+  access-token-validity-seconds: 86400
+  refresh-token-validity-days: 30
+
+cors:
+  allowed-origins: "http://localhost:3000"
+  allowed-methods: "*"
+  allowed-headers: "*"
+  allow-credentials: true
+
+logging:
+  level:
+    root: INFO
+    org.springframework: INFO
+    org.hibernate: WARN
+
+springdoc:
+  api-docs:
+    enabled: true
+    path: /v3/api-docs
+  swagger-ui:
+    enabled: true
+    path: /swagger-ui.html
+  packages-to-scan: com.roadsidehelp.api
+
