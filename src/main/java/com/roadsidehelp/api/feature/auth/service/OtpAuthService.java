@@ -3,6 +3,7 @@ package com.roadsidehelp.api.feature.auth.service;
 import com.roadsidehelp.api.config.exception.ApiException;
 import com.roadsidehelp.api.config.exception.ErrorCode;
 import com.roadsidehelp.api.feature.auth.entity.OtpCode;
+import com.roadsidehelp.api.feature.auth.entity.OtpPurpose;
 import com.roadsidehelp.api.feature.auth.entity.UserAccount;
 import com.roadsidehelp.api.feature.auth.repository.OtpCodeRepository;
 import com.roadsidehelp.api.feature.auth.repository.UserAccountRepository;
@@ -12,7 +13,6 @@ import org.springframework.stereotype.Service;
 
 import java.time.OffsetDateTime;
 import java.time.ZoneId;
-import java.util.Random;
 
 @Service
 @RequiredArgsConstructor
@@ -21,28 +21,31 @@ public class OtpAuthService {
     private final OtpCodeRepository otpRepo;
     private final UserAccountRepository userRepo;
     private final EmailService emailService;
+    private final OtpTransactionService otpTx;
 
-    /**
-     * Send OTP using email
-     */
-    public void sendOtp(String emailOrPhone) {
+    // Send OTP to user email or phone
+    public void sendOtp(String emailOrPhone, OtpPurpose purpose) {
+
         UserAccount user = userRepo
                 .findByEmailOrPhoneNumber(emailOrPhone, emailOrPhone)
                 .orElseThrow(() ->
                         new ApiException(ErrorCode.USER_NOT_FOUND, "User not found"));
 
-        String otp = generateOtp(user.getId());
+        String otp = otpTx.generateOtp(user.getId());
 
-        // NOW WE SEND EMAIL
+        String subject = getSubject(purpose);
+        String message = getMessage(purpose, otp);
+
         emailService.send(
                 user.getEmail(),
-                "Reset Password OTP",
-                "Your OTP is: " + otp
+                subject,
+                message
         );
     }
 
+
     /**
-     * Returns the user after verification
+     * Verify the OTP and return the user
      */
     public UserAccount verifyOtp(String emailOrPhone, String code) {
 
@@ -56,23 +59,9 @@ public class OtpAuthService {
         return user;
     }
 
-    public String generateOtp(String userId) {
-
-        otpRepo.deleteByUserId(userId); // remove old OTP
-
-        String code = String.format("%06d", new Random().nextInt(1000000));
-
-        OtpCode otp = OtpCode.builder()
-                .userId(userId)
-                .code(code)
-                .expiresAt(OffsetDateTime.now(ZoneId.of("Asia/Kolkata")).plusMinutes(5))
-                .used(false)
-                .build();
-
-        otpRepo.save(otp);
-        return code;
-    }
-
+    /**
+     * Validate OTP
+     */
     public void validateOtp(String userId, String code) {
 
         OtpCode otp = otpRepo
@@ -80,15 +69,37 @@ public class OtpAuthService {
                 .orElseThrow(() ->
                         new ApiException(ErrorCode.OTP_INVALID, "OTP not found"));
 
+        // Wrong OTP
         if (!otp.getCode().equals(code)) {
             throw new ApiException(ErrorCode.OTP_INVALID, "Invalid OTP");
         }
 
-        if (otp.getExpiresAt().isBefore(OffsetDateTime.now(ZoneId.of("Asia/Kolkata")))) {
+        // Expired?
+        if (otp.getExpiresAt().isBefore(
+                OffsetDateTime.now(ZoneId.of("Asia/Kolkata"))
+        )) {
             throw new ApiException(ErrorCode.OTP_INVALID, "OTP expired");
         }
 
+        // Mark as used
         otp.setUsed(true);
         otpRepo.save(otp);
     }
+
+    private String getSubject(OtpPurpose purpose) {
+        return switch (purpose) {
+            case LOGIN -> "Login OTP";
+            case PASSWORD_RESET -> "Password Reset OTP";
+            case EMAIL_VERIFICATION -> "Email Verification OTP";
+        };
+    }
+
+    private String getMessage(OtpPurpose purpose, String otp) {
+        return switch (purpose) {
+            case LOGIN -> "Your OTP to login is: " + otp;
+            case PASSWORD_RESET -> "Your password reset OTP is: " + otp;
+            case EMAIL_VERIFICATION -> "Your email verification OTP is: " + otp;
+        };
+    }
+
 }

@@ -1,6 +1,7 @@
 package com.roadsidehelp.api.feature.auth.controller;
 
 import com.roadsidehelp.api.feature.auth.dto.*;
+import com.roadsidehelp.api.feature.auth.entity.OtpPurpose;
 import com.roadsidehelp.api.feature.auth.service.AuthService;
 import com.roadsidehelp.api.feature.auth.service.OtpAuthService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -75,7 +76,7 @@ public class AuthController {
     @ApiResponse(responseCode = "404", description = "User not found")
     @PostMapping("/otp/send")
     public ResponseEntity<String> sendOtp(@RequestParam String username) {
-        otpService.sendOtp(username);
+        otpService.sendOtp(username, OtpPurpose.LOGIN);
         return ResponseEntity.ok("OTP sent successfully");
     }
 
@@ -96,7 +97,7 @@ public class AuthController {
     )
     @ApiResponse(responseCode = "200", description = "Email verified successfully")
     @ApiResponse(responseCode = "400", description = "Invalid or expired token")
-    @GetMapping("/verify")
+    @GetMapping("/verify-email")
     public ResponseEntity<String> verify(@RequestParam String token) {
         authService.verifyEmail(token);
         return ResponseEntity.ok("Email verified successfully!");
@@ -108,7 +109,7 @@ public class AuthController {
     )
     @ApiResponse(responseCode = "200", description = "Password reset link sent")
     @ApiResponse(responseCode = "404", description = "User not found with this email")
-    @PostMapping("/password/forgot")
+    @PostMapping("/forgot-password")
     public ResponseEntity<String> forgotPassword(@RequestParam String email) {
         authService.forgotPassword(email);
         return ResponseEntity.ok("Password reset link sent!");
