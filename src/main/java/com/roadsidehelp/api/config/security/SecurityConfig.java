@@ -5,6 +5,7 @@ import com.roadsidehelp.api.config.security.jwt.JwtAuthenticationFilter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
@@ -26,25 +27,43 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
 
-        String[] publicUris = new String[] {
+        // ============== PUBLIC ENDPOINTS ==============
+        String[] publicUris = {
                 "/api/v1/auth/**",
                 "/v3/api-docs/**",
                 "/swagger-ui/**",
                 "/swagger-ui.html",
-                "/ws-connect/**",
-                "/favicon.ico"
+                "/favicon.ico",
+                "/ws-connect/**"
         };
 
-        http
-                .csrf(AbstractHttpConfigurer::disable)
+        http.csrf(AbstractHttpConfigurer::disable)
                 .cors(Customizer.withDefaults())
                 .exceptionHandling(e -> e.authenticationEntryPoint(authEntryPoint))
                 .sessionManagement(s -> s.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
+
+                        // ---------- Public APIs ----------
                         .requestMatchers(publicUris).permitAll()
+
+                        // ---------- Garage Module ----------
+                        // Create Garage (USER or ADMIN)
+                        .requestMatchers(HttpMethod.POST, "/api/v1/garage")
+                        .hasAnyRole("USER", "ADMIN")
+
+                        // Update Garage (GARAGE or ADMIN)
+                        .requestMatchers(HttpMethod.PUT, "/api/v1/garage/**")
+                        .hasAnyRole("GARAGE", "ADMIN")
+
+                        // Get garage details by ID, city, nearest → PUBLIC
+                        .requestMatchers(HttpMethod.GET, "/api/v1/garage/**")
+                        .permitAll()
+
+                        // ---------- All other requests ----------
                         .anyRequest().authenticated()
                 );
 
+        // Add JWT filter
         http.addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();

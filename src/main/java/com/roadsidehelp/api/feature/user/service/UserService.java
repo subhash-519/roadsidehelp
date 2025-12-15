@@ -1,5 +1,6 @@
 package com.roadsidehelp.api.feature.user.service;
 
+import com.roadsidehelp.api.feature.auth.entity.UserAccount;
 import com.roadsidehelp.api.feature.user.dto.*;
 
 public interface UserService {
@@ -13,5 +14,7 @@ public interface UserService {
     UserAddressDto updateAddress(String userId, UpdateAddressRequest dto);
 
     UserFullInfoDto getLoggedUserFullInfo(String userId);
+
+    UserAccount getUserEntity(String userId);
 
 }

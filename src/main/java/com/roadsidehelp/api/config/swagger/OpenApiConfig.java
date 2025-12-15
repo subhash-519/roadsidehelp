@@ -64,8 +64,8 @@ public class OpenApiConfig {
     @Bean
     public GroupedOpenApi mechanicGroup() {
         return GroupedOpenApi.builder()
-                .group("Mechanic")
-                .pathsToMatch("/api/v1/mechanics/**")
+                .group("Garage")
+                .pathsToMatch("/api/v1/admin/garages/**", "/api/v1/garages/owner/**", "/api/v1/garages/public/**")
                 .build();
     }
 

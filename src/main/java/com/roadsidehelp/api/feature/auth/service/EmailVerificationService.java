@@ -39,7 +39,7 @@ public class EmailVerificationService {
         emailService.send(
                 user.getEmail(),
                 "Verify your account",
-                "Click here to verify: http://localhost:8080/api/v1/auth/email/verify?token=" + token
+                "Click here to verify: http://localhost:8080/api/v1/auth/verify-email?token=" + token
         );
     }
 

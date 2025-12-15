@@ -48,6 +48,8 @@ public class AuthService {
 
         String token = UUID.randomUUID().toString();
 
+        OffsetDateTime expiry = OffsetDateTime.now(ZoneId.of(TimeZones.INDIA)).plusMinutes(15);
+
         UserAccount user = UserAccount.builder()
                 .fullName(fullName)
                 .email(email)
@@ -56,6 +58,7 @@ public class AuthService {
                 .active(true)
                 .isVerified(false)
                 .verificationToken(token)
+                .tokenExpiration(expiry)
                 .roles(new HashSet<>(Set.of("USER")))
                 .build();
 
@@ -197,6 +200,10 @@ public class AuthService {
     public void verifyEmail(String token) {
         UserAccount user = userRepo.findByVerificationToken(token)
                 .orElseThrow(() -> new ApiException(ErrorCode.USER_NOT_FOUND, "Invalid token"));
+
+        if (user.getTokenExpiration() == null) {
+            throw new ApiException(ErrorCode.TOKEN_EXPIRED, "Verification token expired or invalid");
+        }
 
         if (user.getTokenExpiration().isBefore(
                 OffsetDateTime.now(ZoneId.of(TimeZones.INDIA))

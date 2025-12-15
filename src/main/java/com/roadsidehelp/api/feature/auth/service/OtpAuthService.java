@@ -44,9 +44,7 @@ public class OtpAuthService {
     }
 
 
-    /**
-     * Verify the OTP and return the user
-     */
+    // Verify the OTP and return the user
     public UserAccount verifyOtp(String emailOrPhone, String code) {
 
         UserAccount user = userRepo
@@ -59,9 +57,7 @@ public class OtpAuthService {
         return user;
     }
 
-    /**
-     * Validate OTP
-     */
+    // Validate OTP
     public void validateOtp(String userId, String code) {
 
         OtpCode otp = otpRepo

@@ -16,5 +16,7 @@ public enum ErrorCode {
     INTERNAL_ERROR,
     TOKEN_EXPIRED,
     INVALID_TOKEN,
+    DATA_NOT_FOUND,
     EMAIL_NOT_VERIFIED
+
 }

@@ -1,6 +1,7 @@
 package com.roadsidehelp.api.feature.user.service;
 
 import com.roadsidehelp.api.config.exception.ApiException;
+import com.roadsidehelp.api.feature.auth.entity.UserAccount;
 import com.roadsidehelp.api.feature.user.dto.*;
 import com.roadsidehelp.api.feature.user.entity.*;
 import com.roadsidehelp.api.feature.user.mapper.UserMapper;
@@ -111,5 +112,11 @@ public class UserServiceImpl implements UserService {
                 address.getCountry(),
                 address.getPostalCode()
         );
+    }
+
+    @Override
+    public UserAccount getUserEntity(String userId) {
+        return userRepo.findById(userId)
+                .orElseThrow(() -> new ApiException(ErrorCode.USER_NOT_FOUND, USER_NOT_FOUND));
     }
 }
