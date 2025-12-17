@@ -62,18 +62,34 @@ public class OpenApiConfig {
     }
 
     @Bean
-    public GroupedOpenApi mechanicGroup() {
+    public GroupedOpenApi garageGroup() {
         return GroupedOpenApi.builder()
                 .group("Garage")
-                .pathsToMatch("/api/v1/garages/owner/**", "/api/v1/garages/public/**")
+                .pathsToMatch(
+                        "/api/v1/garages/owner/**",
+                        "/api/v1/garages/public/**"
+                )
                 .build();
     }
 
     @Bean
-    public GroupedOpenApi sosGroup() {
+    public GroupedOpenApi bookingGroup() {
         return GroupedOpenApi.builder()
-                .group("SOS")
-                .pathsToMatch("/api/v1/sos/**")
+                .group("Booking")
+                .pathsToMatch(
+                        "/api/v1/bookings/garage/**",
+                        "/api/v1/bookings/user/**"
+                )
+                .build();
+    }
+
+    @Bean
+    public GroupedOpenApi mechanicGroup() {
+        return GroupedOpenApi.builder()
+                .group("Mechanic")
+                .pathsToMatch(
+                        "/api/v1/garage/mechanics/**"
+                )
                 .build();
     }
 
@@ -89,7 +105,11 @@ public class OpenApiConfig {
     public GroupedOpenApi adminGroup() {
         return GroupedOpenApi.builder()
                 .group("Admin Panel")
-                .pathsToMatch("/api/v1/garages/admin/**")
+                .pathsToMatch(
+                        "/api/v1/garages/admin/**",
+                        "/api/v1/admin/bookings/**",
+                        "/api/v1/admin/mechanics/**"
+                )
                 .build();
     }
 }

@@ -18,6 +18,9 @@ public interface GarageRepository extends JpaRepository<Garage, String> {
     // Owner's garage
     Garage findByOwnerId(String ownerId);
 
+    // Owner's garage (used by BookingGarageService)
+    Optional<Garage> findByOwner_Id(String ownerId);
+
     // Public: list all (with optional filters handled in service)
     List<Garage> findByCityIgnoreCase(String city);
 

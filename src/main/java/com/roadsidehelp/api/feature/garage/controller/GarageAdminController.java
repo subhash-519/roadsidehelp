@@ -1,9 +1,5 @@
 package com.roadsidehelp.api.feature.garage.controller;
 
-import com.roadsidehelp.api.config.exception.ApiException;
-import com.roadsidehelp.api.config.exception.ErrorCode;
-import com.roadsidehelp.api.core.utils.CurrentUser;
-import com.roadsidehelp.api.feature.auth.entity.UserAccount;
 import com.roadsidehelp.api.feature.auth.repository.UserAccountRepository;
 import com.roadsidehelp.api.feature.garage.dto.GarageResponse;
 import com.roadsidehelp.api.feature.garage.service.GarageAdminService;
@@ -25,7 +21,7 @@ public class GarageAdminController {
     private final GarageAdminService adminService;
     private final UserAccountRepository userAccountRepository;
 
-    // 🔍 Get all pending KYC garages
+    // Get all pending KYC garages
     @Operation(summary = "Get pending garages")
     @ApiResponse(responseCode = "200", description = "Pending garages fetched")
     @GetMapping("/pending")
@@ -33,7 +29,7 @@ public class GarageAdminController {
         return ResponseEntity.ok(adminService.getPendingGarages());
     }
 
-    // ✅ Approve garage KYC
+    // Approve garage KYC
     @Operation(summary = "Approve garage KYC")
     @ApiResponse(responseCode = "200", description = "Garage approved")
     @PatchMapping("/{garageId}/approve")
@@ -41,7 +37,7 @@ public class GarageAdminController {
         return ResponseEntity.ok(adminService.approveGarage(garageId));
     }
 
-    // ❌ Reject garage KYC
+    // Reject garage KYC
     @Operation(summary = "Reject garage KYC")
     @ApiResponse(responseCode = "200", description = "Garage rejected")
     @PatchMapping("/{garageId}/reject")
@@ -51,7 +47,7 @@ public class GarageAdminController {
         return ResponseEntity.ok(adminService.rejectGarage(garageId, reason));
     }
 
-    // 📄 Admin: Get all garages
+    // Admin: Get all garages
     @Operation(summary = "Get all garages")
     @ApiResponse(responseCode = "200", description = "All garages fetched")
     @GetMapping
@@ -59,7 +55,7 @@ public class GarageAdminController {
         return ResponseEntity.ok(adminService.getAllGarages());
     }
 
-    // 🗑️ Admin: Delete garage
+    // Admin: Delete garage
     @Operation(summary = "Delete garage")
     @ApiResponse(responseCode = "200", description = "Garage deleted")
     @DeleteMapping("/{garageId}")

@@ -115,4 +115,34 @@ public class Garage extends BaseEntity {
 
     @Column(length = 500)
     private String verificationReason;
+
+    // ==============================
+    // Convenience Methods
+    // ==============================
+
+    // Check if the garage is verified (approved by admin)
+    public boolean isApproved() {
+        return this.verified && this.kycStatus == KycStatus.APPROVED;
+    }
+
+    // Check if the garage is currently open based on opening/closing time
+    public boolean isOpen() {
+        if (this.openingTime == null || this.closingTime == null) {
+            return false; // assume closed if times not set
+        }
+
+        LocalTime now = LocalTime.now();
+
+        // Handles overnight shifts (e.g., 22:00 to 06:00)
+        if (openingTime.isBefore(closingTime)) {
+            return !now.isBefore(openingTime) && !now.isAfter(closingTime);
+        } else {
+            return !now.isBefore(openingTime) || !now.isAfter(closingTime);
+        }
+    }
+
+    // Convenience method to check if garage can accept bookings
+    public boolean canAcceptBooking() {
+        return isApproved() && isOpen() && garageStatus == GarageStatus.OPEN;
+    }
 }
