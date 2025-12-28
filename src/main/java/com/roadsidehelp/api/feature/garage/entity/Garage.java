@@ -28,9 +28,13 @@ import java.time.LocalTime;
 @Builder
 public class Garage extends BaseEntity {
 
+    // ============================== Owner ==============================
+
     @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "owner_id", nullable = false, unique = true)
     private UserAccount owner;
+
+    // ============================== Basic Details ==============================
 
     @NotBlank
     @Size(max = 120)
@@ -42,6 +46,8 @@ public class Garage extends BaseEntity {
 
     @Size(max = 500)
     private String imageUrl;
+
+    // ============================== Address ==============================
 
     @NotBlank
     @Size(max = 120)
@@ -66,6 +72,8 @@ public class Garage extends BaseEntity {
     @Pattern(regexp = "\\d{6}", message = "Postal code must be 6 digits")
     private String postalCode;
 
+    // ============================== Garage Configuration ==============================
+
     @Enumerated(EnumType.STRING)
     @Column(name = "garage_type", nullable = false, length = 20)
     private GarageType garageType;
@@ -85,6 +93,8 @@ public class Garage extends BaseEntity {
     @NotNull
     private Double longitude;
 
+    // ============================== Documents (KYC) ==============================
+
     @NotBlank(message = "Shop license document is required")
     private String licenseDocumentUrl;
 
@@ -98,6 +108,8 @@ public class Garage extends BaseEntity {
     private String garagePhotoUrl;
 
     private String additionalDocUrl;
+
+    // ============================== Status & Verification ==============================
 
     @Builder.Default
     @Enumerated(EnumType.STRING)
@@ -116,33 +128,28 @@ public class Garage extends BaseEntity {
     @Column(length = 500)
     private String verificationReason;
 
-    // ==============================
-    // Convenience Methods
-    // ==============================
-
-    // Check if the garage is verified (approved by admin)
+    // ============================== Business Logic (IMPORTANT) ==============================
     public boolean isApproved() {
         return this.verified && this.kycStatus == KycStatus.APPROVED;
     }
 
-    // Check if the garage is currently open based on opening/closing time
     public boolean isOpen() {
-        if (this.openingTime == null || this.closingTime == null) {
-            return false; // assume closed if times not set
-        }
-
-        LocalTime now = LocalTime.now();
-
-        // Handles overnight shifts (e.g., 22:00 to 06:00)
-        if (openingTime.isBefore(closingTime)) {
-            return !now.isBefore(openingTime) && !now.isAfter(closingTime);
-        } else {
-            return !now.isBefore(openingTime) || !now.isAfter(closingTime);
-        }
+        return this.garageStatus == GarageStatus.OPEN;
     }
 
-    // Convenience method to check if garage can accept bookings
     public boolean canAcceptBooking() {
-        return isApproved() && isOpen() && garageStatus == GarageStatus.OPEN;
+        return isApproved() && isOpen();
+    }
+
+    public boolean isWithinWorkingHours(LocalTime currentTime) {
+
+        if (openingTime == null || closingTime == null) {
+            return true;
+        }
+
+        if (openingTime.isBefore(closingTime)) {
+            return !currentTime.isBefore(openingTime) && !currentTime.isAfter(closingTime);
+        }
+        return !currentTime.isBefore(openingTime) || !currentTime.isAfter(closingTime);
     }
 }

@@ -33,7 +33,8 @@ public class SecurityConfig {
                 "/swagger-ui/**",
                 "/swagger-ui.html",
                 "/favicon.ico",
-                "/ws-connect/**"
+                "/ws-connect/**",
+                "/api/v1/mechanic/auth/**"
         };
 
         http.csrf(AbstractHttpConfigurer::disable)

@@ -4,6 +4,7 @@ import com.roadsidehelp.api.config.exception.ApiException;
 import com.roadsidehelp.api.config.exception.ErrorCode;
 import com.roadsidehelp.api.feature.auth.entity.UserAccount;
 import com.roadsidehelp.api.feature.auth.entity.UserRole;
+import com.roadsidehelp.api.feature.auth.entity.UserType;
 import com.roadsidehelp.api.feature.auth.repository.UserAccountRepository;
 import com.roadsidehelp.api.feature.garage.dto.GarageResponse;
 import com.roadsidehelp.api.feature.garage.entity.Garage;
@@ -24,6 +25,7 @@ public class GarageAdminServiceImpl implements GarageAdminService {
     private final GarageRepository garageRepository;
     private final GarageMapper garageMapper;
     private final UserAccountRepository userAccountRepository;
+    private final GarageEmailNotificationService garageEmailNotificationService;
 
     @Override
     public List<GarageResponse> getPendingGarages() {
@@ -44,13 +46,14 @@ public class GarageAdminServiceImpl implements GarageAdminService {
         garage.setVerificationReason(null);
 
         UserAccount owner = garage.getOwner();
-
-        owner.getRoles().remove(UserRole.ROLE_USER);
-        owner.getRoles().add(UserRole.ROLE_GARAGE_OWNER);
+        owner.getRoles().remove(UserRole.USER);
+        owner.getRoles().add(UserRole.GARAGE);
+        owner.setUserType(UserType.GARAGE);
 
         userAccountRepository.save(owner);
         garageRepository.save(garage);
 
+        garageEmailNotificationService.sendApprovalNotification(owner);
         return garageMapper.toResponse(garage);
     }
 

@@ -16,4 +16,6 @@ public interface MechanicGarageService {
             String garageId,
             String mechanicId,
             UpdateMechanicStatusRequest request);
+
+    public void deleteMechanic(String mechanicId);
 }

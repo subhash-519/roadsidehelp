@@ -9,6 +9,7 @@ import com.roadsidehelp.api.feature.auth.dto.RegisterResponse;
 import com.roadsidehelp.api.feature.auth.entity.RefreshToken;
 import com.roadsidehelp.api.feature.auth.entity.UserAccount;
 import com.roadsidehelp.api.feature.auth.entity.UserRole;
+import com.roadsidehelp.api.feature.auth.entity.UserType;
 import com.roadsidehelp.api.feature.auth.repository.RefreshTokenRepository;
 import com.roadsidehelp.api.feature.auth.repository.UserAccountRepository;
 import lombok.RequiredArgsConstructor;
@@ -59,7 +60,8 @@ public class AuthService {
                 .isVerified(false)
                 .verificationToken(token)
                 .tokenExpiration(expiry)
-                .roles(new HashSet<>(Set.of(UserRole.ROLE_USER)))
+                .userType(UserType.USER)
+                .roles(new HashSet<>(Set.of(UserRole.USER)))
                 .build();
 
         userRepo.save(user);

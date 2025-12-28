@@ -1,32 +1,29 @@
 package com.roadsidehelp.api.feature.mechanic.dto;
 
 import com.roadsidehelp.api.feature.auth.entity.UserRole;
+import com.roadsidehelp.api.feature.mechanic.entity.MechanicStatus;
 import lombok.Builder;
 import lombok.Getter;
-import lombok.Setter;
 
 import java.util.Set;
 
 @Getter
-@Setter
 @Builder
-public class MechanicResponse {
+public class MechanicProfileResponse {
 
-    // Mechanic (domain)
-    private String id;
+    // Mechanic domain
+    private String mechanicId;
     private String fullName;
-    private String status;
+    private MechanicStatus status;
     private boolean available;
 
-    // Garage (association)
+    // Garage
     private String garageId;
-    private String garageName;
 
-    // UserAccount (auth – derived)
+    // Auth (derived from UserAccount)
     private String userAccountId;
     private String email;
     private String phoneNumber;
     private Set<UserRole> roles;
-    private boolean active;
-    private boolean verified;
 }
+

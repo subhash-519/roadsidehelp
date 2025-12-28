@@ -1,5 +1,5 @@
 -- ========================================
--- USER ACCOUNT TABLE
+-- USER ACCOUNT
 -- ========================================
 CREATE TABLE IF NOT EXISTS user_account (
     id CHAR(36) NOT NULL PRIMARY KEY,
@@ -9,51 +9,52 @@ CREATE TABLE IF NOT EXISTS user_account (
     password_hash VARCHAR(256) NOT NULL,
     phone_number VARCHAR(20) NOT NULL UNIQUE,
 
-    is_active TINYINT(1) DEFAULT 1,
+    user_type VARCHAR(30) NOT NULL,
+
+    is_active BOOLEAN NOT NULL DEFAULT TRUE,
+    is_verified BOOLEAN NOT NULL DEFAULT FALSE,
+
     verification_token VARCHAR(255),
     token_expiration TIMESTAMP NULL,
-    is_verified TINYINT(1) DEFAULT 0,
 
-    reset_password_token VARCHAR(255) NULL,
+    reset_password_token VARCHAR(255),
     reset_password_expiry TIMESTAMP NULL,
 
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
-);
-
+    updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+    ON UPDATE CURRENT_TIMESTAMP
+    );
 
 -- ========================================
--- USER ROLES TABLE (ElementCollection)
+-- USER ROLES
 -- ========================================
 CREATE TABLE IF NOT EXISTS user_roles (
     user_id CHAR(36) NOT NULL,
-    role VARCHAR(255) NOT NULL,
+    role VARCHAR(30) NOT NULL,
+
+    PRIMARY KEY (user_id, role),
 
     CONSTRAINT fk_user_roles_user
-        FOREIGN KEY (user_id)
-        REFERENCES user_account(id)
-        ON DELETE CASCADE
-);
-
-CREATE INDEX idx_user_roles_user ON user_roles(user_id);
+    FOREIGN KEY (user_id)
+    REFERENCES user_account(id)
+    ON DELETE CASCADE
+    );
 
 -- ========================================
--- OTP TABLE
+-- OTP CODES
 -- ========================================
 CREATE TABLE IF NOT EXISTS otp_codes (
     id CHAR(36) NOT NULL PRIMARY KEY,
     user_id CHAR(36) NOT NULL,
     code VARCHAR(20) NOT NULL,
     expires_at TIMESTAMP NOT NULL,
-    used TINYINT(1) DEFAULT 0,
+    used BOOLEAN NOT NULL DEFAULT FALSE,
 
     CONSTRAINT fk_otp_user
-        FOREIGN KEY (user_id)
-        REFERENCES user_account(id)
-        ON DELETE CASCADE
-);
-
-CREATE INDEX idx_otp_user ON otp_codes(user_id);
+    FOREIGN KEY (user_id)
+    REFERENCES user_account(id)
+    ON DELETE CASCADE
+    );
 
 -- ========================================
 -- REFRESH TOKEN
@@ -62,20 +63,22 @@ CREATE TABLE IF NOT EXISTS refresh_token (
     id CHAR(36) NOT NULL PRIMARY KEY,
     user_id CHAR(36) NOT NULL,
     token VARCHAR(512) NOT NULL UNIQUE,
-    expires_at TIMESTAMP,
-    revoked TINYINT(1) DEFAULT 0,
+    expires_at TIMESTAMP NULL,
+    revoked BOOLEAN NOT NULL DEFAULT FALSE,
 
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+    ON UPDATE CURRENT_TIMESTAMP,
 
-    CONSTRAINT fk_refresh_token_user FOREIGN KEY (user_id)
-        REFERENCES user_account(id) ON DELETE CASCADE
-);
+    CONSTRAINT fk_refresh_token_user
+    FOREIGN KEY (user_id)
+    REFERENCES user_account(id)
+    ON DELETE CASCADE
+    );
 
 -- ========================================
--- USER ADDRESS TABLE
+-- USER ADDRESS
 -- ========================================
-
 CREATE TABLE IF NOT EXISTS user_address (
     id CHAR(36) NOT NULL PRIMARY KEY,
     user_id CHAR(36) NOT NULL UNIQUE,
@@ -88,15 +91,13 @@ CREATE TABLE IF NOT EXISTS user_address (
     postal_code VARCHAR(6) NOT NULL,
 
     CONSTRAINT fk_user_address_user
-        FOREIGN KEY (user_id)
-        REFERENCES user_account(id)
-        ON DELETE CASCADE
-);
-
-CREATE INDEX idx_user_address_user ON user_address(user_id);
+    FOREIGN KEY (user_id)
+    REFERENCES user_account(id)
+    ON DELETE CASCADE
+    );
 
 -- ========================================
--- USER PROFILE TABLE
+-- USER PROFILE
 -- ========================================
 CREATE TABLE IF NOT EXISTS user_profile (
     id CHAR(36) NOT NULL PRIMARY KEY,
@@ -107,23 +108,20 @@ CREATE TABLE IF NOT EXISTS user_profile (
     profile_image_url VARCHAR(500),
 
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+    ON UPDATE CURRENT_TIMESTAMP,
 
     CONSTRAINT fk_user_profile_user
-        FOREIGN KEY (user_id)
-        REFERENCES user_account(id)
-        ON DELETE CASCADE
-);
-
-CREATE INDEX idx_user_profile_user ON user_profile(user_id);
+    FOREIGN KEY (user_id)
+    REFERENCES user_account(id)
+    ON DELETE CASCADE
+    );
 
 -- ========================================
--- GARAGE TABLE WITH KYC STATUS
+-- GARAGE
 -- ========================================
-
 CREATE TABLE IF NOT EXISTS garage (
     id CHAR(36) NOT NULL PRIMARY KEY,
-
     owner_id CHAR(36) NOT NULL UNIQUE,
 
     name VARCHAR(120) NOT NULL,
@@ -138,7 +136,6 @@ CREATE TABLE IF NOT EXISTS garage (
     postal_code VARCHAR(6) NOT NULL,
 
     garage_type VARCHAR(20) NOT NULL,
-
     opening_time VARCHAR(20),
     closing_time VARCHAR(20),
 
@@ -154,26 +151,124 @@ CREATE TABLE IF NOT EXISTS garage (
     additional_doc_url VARCHAR(500),
 
     garage_status VARCHAR(20) NOT NULL DEFAULT 'CLOSED',
-
-    -- NEW KYC STATUS
     kyc_status VARCHAR(20) NOT NULL DEFAULT 'PENDING',
 
-    is_verified TINYINT(1) NOT NULL DEFAULT 0,
+    is_verified BOOLEAN NOT NULL DEFAULT FALSE,
     verification_reason VARCHAR(500),
 
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
-        ON UPDATE CURRENT_TIMESTAMP,
+    ON UPDATE CURRENT_TIMESTAMP,
 
-    CONSTRAINT fk_garage_owner FOREIGN KEY (owner_id)
-        REFERENCES user_account(id)
-        ON DELETE CASCADE
-);
+    CONSTRAINT fk_garage_owner
+    FOREIGN KEY (owner_id)
+    REFERENCES user_account(id)
+    ON DELETE CASCADE
+    );
 
-CREATE INDEX idx_garage_name ON garage(name);
-CREATE INDEX idx_garage_city ON garage(city);
-CREATE INDEX idx_garage_state ON garage(state);
-CREATE INDEX idx_garage_lat_lng ON garage(latitude, longitude);
-CREATE INDEX idx_garage_type ON garage(garage_type);
-CREATE INDEX idx_garage_verified ON garage(is_verified);
-CREATE INDEX idx_garage_kyc_status ON garage(kyc_status);
+-- ========================================
+-- VEHICLE
+-- ========================================
+CREATE TABLE IF NOT EXISTS vehicle (
+    id CHAR(36) NOT NULL PRIMARY KEY,
+    user_id CHAR(36) NOT NULL,
+
+    vehicle_number VARCHAR(20) NOT NULL UNIQUE,
+    type VARCHAR(20) NOT NULL,
+    brand VARCHAR(100) NOT NULL,
+    model VARCHAR(100) NOT NULL,
+    manufacturing_year INT,
+
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+    ON UPDATE CURRENT_TIMESTAMP,
+
+    CONSTRAINT fk_vehicle_user
+    FOREIGN KEY (user_id)
+    REFERENCES user_account(id)
+    ON DELETE CASCADE
+    );
+
+-- ========================================
+-- MECHANIC (FIXED)
+-- ========================================
+CREATE TABLE IF NOT EXISTS mechanic (
+                                        id CHAR(36) NOT NULL PRIMARY KEY,
+
+    user_account_id CHAR(36) NOT NULL UNIQUE,
+
+    first_login BOOLEAN NOT NULL DEFAULT TRUE,
+    status VARCHAR(30) NOT NULL,
+    available BOOLEAN NOT NULL DEFAULT TRUE,
+
+    garage_id CHAR(36) NOT NULL,
+
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+    ON UPDATE CURRENT_TIMESTAMP,
+
+    CONSTRAINT fk_mechanic_user_account
+    FOREIGN KEY (user_account_id)
+    REFERENCES user_account(id)
+    ON DELETE CASCADE,
+
+    CONSTRAINT fk_mechanic_garage
+    FOREIGN KEY (garage_id)
+    REFERENCES garage(id)
+    ON DELETE CASCADE
+    );
+
+-- ========================================
+-- BOOKING
+-- ========================================
+CREATE TABLE IF NOT EXISTS booking (
+    id CHAR(36) NOT NULL PRIMARY KEY,
+
+    user_id CHAR(36) NOT NULL,
+    garage_id CHAR(36) NOT NULL,
+    vehicle_id CHAR(36) NOT NULL,
+    mechanic_id CHAR(36) NULL,
+
+    booking_type VARCHAR(30) NOT NULL,
+    status VARCHAR(30) NOT NULL,
+    payment_status VARCHAR(30) NOT NULL,
+
+    problem_description VARCHAR(500),
+    estimated_price DECIMAL(10,2) NOT NULL,
+
+    pickup_latitude DOUBLE NOT NULL,
+    pickup_longitude DOUBLE NOT NULL,
+    pickup_address VARCHAR(255),
+
+    scheduled_at TIMESTAMP NOT NULL,
+    accepted_at TIMESTAMP NULL,
+    started_at TIMESTAMP NULL,
+    completed_at TIMESTAMP NULL,
+
+    rejection_reason VARCHAR(255),
+    cancellation_reason VARCHAR(255),
+
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+    ON UPDATE CURRENT_TIMESTAMP,
+
+    CONSTRAINT fk_booking_user
+    FOREIGN KEY (user_id)
+    REFERENCES user_account(id)
+    ON DELETE CASCADE,
+
+    CONSTRAINT fk_booking_garage
+    FOREIGN KEY (garage_id)
+    REFERENCES garage(id)
+    ON DELETE CASCADE,
+
+    CONSTRAINT fk_booking_vehicle
+    FOREIGN KEY (vehicle_id)
+    REFERENCES vehicle(id)
+    ON DELETE CASCADE,
+
+    CONSTRAINT fk_booking_mechanic
+    FOREIGN KEY (mechanic_id)
+    REFERENCES mechanic(id)
+    ON DELETE SET NULL
+    );

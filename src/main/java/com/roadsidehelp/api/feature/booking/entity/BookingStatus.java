@@ -6,6 +6,7 @@ public enum BookingStatus {
     MECHANIC_ASSIGNED,   // Mechanic assigned
     CONFIRMED,           // Ready for payment
     IN_PROGRESS,         // Service started
+    PAID,
     COMPLETED,           // Finished
     CANCELLED,            // User / Garage / Admin
     REJECTED,

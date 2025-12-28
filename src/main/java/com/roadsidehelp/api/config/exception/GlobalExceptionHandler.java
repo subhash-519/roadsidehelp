@@ -1,6 +1,5 @@
 package com.roadsidehelp.api.config.exception;
 
-import com.roadsidehelp.api.core.response.ApiResponse;
 import jakarta.validation.ConstraintViolationException;
 import org.springframework.http.*;
 import org.springframework.web.bind.MethodArgumentNotValidException;

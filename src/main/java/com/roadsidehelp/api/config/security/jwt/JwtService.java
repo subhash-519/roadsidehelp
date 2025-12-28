@@ -20,28 +20,29 @@ public class JwtService {
     private Key signingKey;
     private JwtParser jwtParser;
 
+    // ======= CONSTRUCTOR =======
     public JwtService(JwtProperties properties) {
-
         this.properties = properties;
     }
 
+    // ======= INITIALIZE JWT SIGNING KEY & PARSER =======
     @PostConstruct
     public void init() {
         byte[] keyBytes = properties.getSecret().getBytes(StandardCharsets.UTF_8);
         signingKey = Keys.hmacShaKeyFor(keyBytes);
-        jwtParser = Jwts.parserBuilder().setSigningKey(signingKey).build();
+        jwtParser = Jwts.parserBuilder()
+                .setSigningKey(signingKey)
+                .build();
     }
 
-    // -----------------------------------------------------
-    // CREATE ACCESS TOKEN
-    // -----------------------------------------------------
+    // ======= GENERATE ACCESS TOKEN =======
     public String generateAccessToken(String userId, String username, Collection<UserRole> roles) {
         Instant now = Instant.now();
         Instant exp = now.plus(properties.getAccessTokenValiditySeconds(), ChronoUnit.SECONDS);
 
         return Jwts.builder()
                 .setId(UUID.randomUUID().toString())
-                .setSubject(userId)                     // userId is principal
+                .setSubject(userId)                     // userId as principal
                 .setIssuedAt(Date.from(now))
                 .setExpiration(Date.from(exp))
                 .claim("type", "access")
@@ -51,9 +52,7 @@ public class JwtService {
                 .compact();
     }
 
-    // -----------------------------------------------------
-    // CREATE REFRESH TOKEN
-    // -----------------------------------------------------
+    // ======= GENERATE REFRESH TOKEN =======
     public String generateRefreshToken(String userId) {
         Instant now = Instant.now();
         Instant exp = now.plus(properties.getRefreshTokenValidityDays(), ChronoUnit.DAYS);
@@ -68,9 +67,7 @@ public class JwtService {
                 .compact();
     }
 
-    // -----------------------------------------------------
-    // VALIDATE TOKEN SIGNATURE + EXPIRATION
-    // -----------------------------------------------------
+    // ======= VALIDATE TOKEN SIGNATURE & STRUCTURE =======
     public boolean isValidateToken(String token) {
         try {
             jwtParser.parseClaimsJws(token);
@@ -80,14 +77,12 @@ public class JwtService {
         }
     }
 
-    // -----------------------------------------------------
-    // PARSE ACCESS TOKEN (ENSURE ACCESS TYPE)
-    // -----------------------------------------------------
+    // ======= PARSE ACCESS TOKEN (ACCESS TYPE ONLY) =======
     public JwtPayload parseAccessToken(String token) {
 
         Claims claims = jwtParser.parseClaimsJws(token).getBody();
 
-        // Prevent refresh token being used as access token
+        // Prevent refresh token usage as access token
         String type = claims.get("type", String.class);
         if (!"access".equals(type)) {
             throw new JwtException("Invalid token type");
@@ -103,28 +98,23 @@ public class JwtService {
         return new JwtPayload(userId, username, roles);
     }
 
-    // -----------------------------------------------------
-    // EXPIRATION
-    // -----------------------------------------------------
+    // ======= TOKEN EXPIRATION CHECK =======
     public boolean isTokenExpired(String token) {
         Date exp = jwtParser.parseClaimsJws(token).getBody().getExpiration();
         return exp.before(new Date());
     }
 
+    // ======= GET TOKEN EXPIRATION DATE =======
     public Date getExpiration(String token) {
         return jwtParser.parseClaimsJws(token).getBody().getExpiration();
     }
 
-    // -----------------------------------------------------
-    // UTILS
-    // -----------------------------------------------------
+    // ======= TOKEN UTIL METHODS =======
     public String extractUserId(String token) {
         return jwtParser.parseClaimsJws(token).getBody().getSubject();
     }
 
-    // -----------------------------------------------------
-    // VALIDATE TOKEN AGAINST USER DETAILS
-    // -----------------------------------------------------
+    // ======= VALIDATE TOKEN AGAINST USER DETAILS =======
     public boolean isTokenValidForUser(String token, UserDetails userDetails) {
         String userId = extractUserId(token);
 
@@ -132,5 +122,4 @@ public class JwtService {
                 && isValidateToken(token)
                 && !isTokenExpired(token);
     }
-
 }

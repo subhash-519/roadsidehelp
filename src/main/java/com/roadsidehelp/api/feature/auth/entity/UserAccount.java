@@ -55,6 +55,10 @@ public class UserAccount extends BaseEntity {
     @Enumerated(EnumType.STRING)
     private Set<UserRole> roles = new HashSet<>();
 
+    @Enumerated(EnumType.STRING)
+    @Column(name = "user_type", nullable = false, length = 30)
+    private UserType userType;
+
     @Column(name = "is_active")
     private boolean active = true;
 

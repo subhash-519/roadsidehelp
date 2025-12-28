@@ -26,7 +26,6 @@ public class VehicleUserController {
     private final VehicleUserService vehicleService;
 
     // -------------------- ADD VEHICLE --------------------
-
     @Operation(
             summary = "Add a new vehicle",
             description = "Add a vehicle for the authenticated user"
@@ -41,7 +40,6 @@ public class VehicleUserController {
     }
 
     // -------------------- GET MY VEHICLES --------------------
-
     @Operation(
             summary = "Get my vehicles",
             description = "Fetch all vehicles of the authenticated user"
@@ -55,7 +53,6 @@ public class VehicleUserController {
     }
 
     // -------------------- UPDATE VEHICLE --------------------
-
     @Operation(
             summary = "Update vehicle details",
             description = "Update a vehicle owned by the authenticated user"
@@ -72,7 +69,6 @@ public class VehicleUserController {
     }
 
     // -------------------- DELETE VEHICLE --------------------
-
     @Operation(
             summary = "Delete vehicle",
             description = "Delete a vehicle owned by the authenticated user"

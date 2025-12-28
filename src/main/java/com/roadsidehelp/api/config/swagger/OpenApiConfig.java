@@ -14,7 +14,7 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 public class OpenApiConfig {
 
-    // MAIN OPENAPI CONFIG
+    // ======= MAIN OPENAPI CONFIG =======
     @Bean
     public OpenAPI roadsideHelpAPI() {
         return new OpenAPI()
@@ -44,7 +44,7 @@ public class OpenApiConfig {
                 );
     }
 
-    // GROUPED APIS
+    // ======= AUTHENTICATION APIS =======
     @Bean
     public GroupedOpenApi authGroup() {
         return GroupedOpenApi.builder()
@@ -53,6 +53,7 @@ public class OpenApiConfig {
                 .build();
     }
 
+    // ======= USER APIS =======
     @Bean
     public GroupedOpenApi userGroup() {
         return GroupedOpenApi.builder()
@@ -61,6 +62,7 @@ public class OpenApiConfig {
                 .build();
     }
 
+    // ======= GARAGE APIS =======
     @Bean
     public GroupedOpenApi garageGroup() {
         return GroupedOpenApi.builder()
@@ -72,6 +74,7 @@ public class OpenApiConfig {
                 .build();
     }
 
+    // ======= BOOKING APIS =======
     @Bean
     public GroupedOpenApi bookingGroup() {
         return GroupedOpenApi.builder()
@@ -83,16 +86,19 @@ public class OpenApiConfig {
                 .build();
     }
 
+    // ======= MECHANIC APIS =======
     @Bean
     public GroupedOpenApi mechanicGroup() {
         return GroupedOpenApi.builder()
                 .group("Mechanic")
                 .pathsToMatch(
-                        "/api/v1/garage/mechanics/**"
+                        "/api/v1/garage/mechanics/**",
+                        "/api/v1/mechanic/**"
                 )
                 .build();
     }
 
+    // ======= VEHICLE APIS =======
     @Bean
     public GroupedOpenApi vehicleGroup() {
         return GroupedOpenApi.builder()
@@ -101,6 +107,7 @@ public class OpenApiConfig {
                 .build();
     }
 
+    // ======= ADMIN PANEL APIS =======
     @Bean
     public GroupedOpenApi adminGroup() {
         return GroupedOpenApi.builder()

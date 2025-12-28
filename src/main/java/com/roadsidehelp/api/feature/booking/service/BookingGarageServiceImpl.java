@@ -32,9 +32,7 @@ public class BookingGarageServiceImpl implements BookingGarageService {
     private final MechanicRepository mechanicRepository;
     private final BookingValidator bookingValidator;
 
-    /* =========================
-       GET GARAGE BOOKINGS
-       ========================= */
+    /* ========================= GET GARAGE BOOKINGS ========================= */
     @Transactional(readOnly = true)
     public List<BookingResponse> getGarageBookings() {
 
@@ -56,9 +54,7 @@ public class BookingGarageServiceImpl implements BookingGarageService {
                 .toList();
     }
 
-    /* =========================
-       ACCEPT / REJECT BOOKING
-       ========================= */
+    /* ========================= ACCEPT / REJECT BOOKING ========================= */
     public BookingResponse updateBookingStatus(
             String bookingId,
             UpdateBookingStatusRequest request) {
@@ -84,9 +80,7 @@ public class BookingGarageServiceImpl implements BookingGarageService {
         return BookingMapper.toResponse(booking);
     }
 
-    /* =========================
-       ASSIGN MECHANIC
-       ========================= */
+    /* ========================= ASSIGN MECHANIC ========================= */
     public BookingResponse assignMechanic(AssignMechanicRequest request) {
 
         Booking booking = getGarageBooking(request.getBookingId());
@@ -105,22 +99,32 @@ public class BookingGarageServiceImpl implements BookingGarageService {
             );
         }
 
+        if (!mechanic.isAvailable()) {
+            throw new ApiException(
+                    ErrorCode.INVALID_REQUEST,
+                    "Mechanic is currently unavailable"
+            );
+        }
+
         booking.setMechanic(mechanic);
+        booking.setStatus(BookingStatus.MECHANIC_ASSIGNED);
+
+        mechanic.setAvailable(false);
+        mechanicRepository.save(mechanic);
 
         return BookingMapper.toResponse(booking);
     }
 
-    /* =========================
-       START SERVICE
-       ========================= */
+    /* ========================= START SERVICE ========================= */
+    @Override
     public BookingResponse startService(String bookingId) {
 
         Booking booking = getGarageBooking(bookingId);
 
-        if (booking.getStatus() != BookingStatus.ACCEPTED) {
+        if (booking.getStatus() != BookingStatus.MECHANIC_ASSIGNED) {
             throw new ApiException(
                     ErrorCode.INVALID_REQUEST,
-                    "Service can start only after booking is ACCEPTED"
+                    "Service can start only after mechanic is assigned"
             );
         }
 
@@ -130,29 +134,26 @@ public class BookingGarageServiceImpl implements BookingGarageService {
         return BookingMapper.toResponse(booking);
     }
 
-    /* =========================
-       COMPLETE SERVICE
-       ========================= */
+    /* ========================= COMPLETE SERVICE ========================= */
     public BookingResponse completeService(String bookingId) {
 
         Booking booking = getGarageBooking(bookingId);
 
-        if (booking.getStatus() != BookingStatus.IN_PROGRESS) {
-            throw new ApiException(
-                    ErrorCode.INVALID_REQUEST,
-                    "Service can be completed only if IN_PROGRESS"
-            );
-        }
+        bookingValidator.validateCompletion(booking);
 
         booking.setStatus(BookingStatus.COMPLETED);
         booking.setCompletedAt(OffsetDateTime.now());
 
+        Mechanic mechanic = booking.getMechanic();
+        if (mechanic != null) {
+            mechanic.setAvailable(true);
+            mechanicRepository.save(mechanic);
+        }
+
         return BookingMapper.toResponse(booking);
     }
 
-    /* =========================
-       INTERNAL
-       ========================= */
+    /* ========================= INTERNAL ========================= */
     private Booking getGarageBooking(String bookingId) {
 
         String ownerId = CurrentUser.getUserId();

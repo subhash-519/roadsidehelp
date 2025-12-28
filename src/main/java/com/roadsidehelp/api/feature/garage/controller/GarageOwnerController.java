@@ -1,11 +1,14 @@
 package com.roadsidehelp.api.feature.garage.controller;
 
+import com.roadsidehelp.api.core.utils.CurrentUser;
 import com.roadsidehelp.api.feature.garage.dto.*;
-import com.roadsidehelp.api.feature.garage.service.OwnerGarageService;
+import com.roadsidehelp.api.feature.garage.service.OwnerGarageServiceImpl;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -13,46 +16,95 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping("/api/v1/garages/owner")
 public class GarageOwnerController {
 
-    private final OwnerGarageService garageService;
+    private final OwnerGarageServiceImpl garageService;
 
-    // Owner: Create garage
-    @Operation(summary = "Create garage", description = "Create garage for authenticated user")
+    //Create garage (USER only)
+    @PostMapping
+    @PreAuthorize("hasRole('USER')")
+    @Operation(
+            summary = "Create garage",
+            description = "Create a new garage for the authenticated user"
+    )
     @ApiResponse(responseCode = "200", description = "Garage created successfully")
-    @PostMapping("/create")
-    public ResponseEntity<GarageResponse> createGarage(@RequestBody CreateGarageRequest req) {
-        return ResponseEntity.ok(garageService.createGarage(req));
+    @ApiResponse(responseCode = "400", description = "Invalid request")
+    @ApiResponse(responseCode = "401", description = "Unauthorized")
+    @ApiResponse(responseCode = "409", description = "Garage already exists")
+    public ResponseEntity<GarageResponse> createGarage(
+            @RequestBody @Valid CreateGarageRequest req
+    ) {
+        return ResponseEntity.ok(
+                garageService.createGarage(CurrentUser.getUserId(), req)
+        );
     }
 
-    // Owner: Get my garage
-    @Operation(summary = "Get my garage", description = "Fetch logged-in user's garage details")
-    @ApiResponse(responseCode = "200", description = "Garage fetched")
-    @ApiResponse(responseCode = "404", description = "Garage not found")
+    //Get my garage (USER or GARAGE)
     @GetMapping("/me")
+    @PreAuthorize("hasAnyRole('USER','GARAGE')")
+    @Operation(
+            summary = "Get my garage",
+            description = "Fetch the garage associated with the logged-in user"
+    )
+    @ApiResponse(responseCode = "200", description = "Garage details fetched successfully")
+    @ApiResponse(responseCode = "404", description = "Garage not found")
+    @ApiResponse(responseCode = "401", description = "Unauthorized")
     public ResponseEntity<GarageResponse> getMyGarage() {
-        return ResponseEntity.ok(garageService.getMyGarage());
+        return ResponseEntity.ok(
+                garageService.getMyGarage(CurrentUser.getUserId())
+        );
     }
 
-    // Owner: Update garage
-    @Operation(summary = "Update my garage", description = "Update the authenticated user's garage")
+    //Update garage details
+    @PutMapping
+    @PreAuthorize("hasAnyRole('USER','GARAGE')")
+    @Operation(
+            summary = "Update garage details",
+            description = "Update basic garage information. Re-verification may be required."
+    )
     @ApiResponse(responseCode = "200", description = "Garage updated successfully")
-    @PutMapping("/update-garage")
-    public ResponseEntity<GarageResponse> updateGarage(@RequestBody UpdateGarageRequest req) {
-        return ResponseEntity.ok(garageService.updateGarage(req));
+    @ApiResponse(responseCode = "404", description = "Garage not found")
+    @ApiResponse(responseCode = "401", description = "Unauthorized")
+    public ResponseEntity<GarageResponse> updateGarage(
+            @RequestBody @Valid UpdateGarageRequest req
+    ) {
+        return ResponseEntity.ok(
+                garageService.updateGarage(CurrentUser.getUserId(), req)
+        );
     }
 
-    // Owner: Upload documents
-    @Operation(summary = "Update garage documents", description = "Upload or update required documents")
-    @ApiResponse(responseCode = "200", description = "Documents updated")
-    @PostMapping("/update-documents")
-    public ResponseEntity<GarageResponse> updateDocuments(@RequestBody GarageDocumentRequest req) {
-        return ResponseEntity.ok(garageService.updateDocuments(req));
+    // Upload documents (KYC)
+    @PostMapping("/documents")
+    @PreAuthorize("hasAnyRole('USER','GARAGE')")
+    @Operation(
+            summary = "Upload garage documents",
+            description = "Upload or update KYC documents for the garage"
+    )
+    @ApiResponse(responseCode = "200", description = "Documents updated successfully")
+    @ApiResponse(responseCode = "404", description = "Garage not found")
+    @ApiResponse(responseCode = "401", description = "Unauthorized")
+    public ResponseEntity<GarageResponse> updateDocuments(
+            @RequestBody @Valid GarageDocumentRequest req
+    ) {
+        return ResponseEntity.ok(
+                garageService.updateDocuments(CurrentUser.getUserId(), req)
+        );
     }
 
+    // Open / Close garage (APPROVED GARAGE only)
     @PatchMapping("/open-status")
-    @Operation(summary = "Open/Close garage")
+    @PreAuthorize("hasRole('GARAGE')")
+    @Operation(
+            summary = "Open or close garage",
+            description = "Change garage open status. Garage must be verified and KYC approved to open."
+    )
+    @ApiResponse(responseCode = "200", description = "Garage status updated successfully")
+    @ApiResponse(responseCode = "403", description = "Garage not verified or KYC not approved")
+    @ApiResponse(responseCode = "404", description = "Garage not found")
+    @ApiResponse(responseCode = "401", description = "Unauthorized")
     public ResponseEntity<GarageResponse> updateOpenStatus(
-            @RequestParam boolean open) {
-        return ResponseEntity.ok(garageService.updateOpenStatus(open));
+            @RequestParam boolean open
+    ) {
+        return ResponseEntity.ok(
+                garageService.updateOpenStatus(CurrentUser.getUserId(), open)
+        );
     }
-
 }
