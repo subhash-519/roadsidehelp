@@ -107,4 +107,16 @@ public class GarageOwnerController {
                 garageService.updateOpenStatus(CurrentUser.getUserId(), open)
         );
     }
+
+    @PreAuthorize("hasAnyRole('USER','GARAGE')")
+    @GetMapping("/status")
+    @Operation(
+            summary = "Get garage application status",
+            description = "Check whether the user has applied for a garage and its verification status"
+    )
+    public ResponseEntity<GarageOwnerStatusResponse> getGarageStatus() {
+        return ResponseEntity.ok(
+                garageService.getMyGarageStatus(CurrentUser.getUserId())
+        );
+    }
 }

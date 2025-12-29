@@ -29,49 +29,57 @@ public class SecurityConfig {
 
         String[] publicUris = {
                 "/api/v1/auth/**",
+                "/api/v1/mechanic/auth/**",
                 "/v3/api-docs/**",
                 "/swagger-ui/**",
                 "/swagger-ui.html",
                 "/favicon.ico",
-                "/ws-connect/**",
-                "/api/v1/mechanic/auth/**"
+                "/ws-connect/**"
         };
 
-        http.csrf(AbstractHttpConfigurer::disable)
+        http
+                .csrf(AbstractHttpConfigurer::disable)
                 .cors(Customizer.withDefaults())
                 .exceptionHandling(e -> e.authenticationEntryPoint(authEntryPoint))
-                .sessionManagement(s -> s.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                .sessionManagement(
+                        s -> s.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
+                )
                 .authorizeHttpRequests(auth -> auth
 
-                        // Public
+                        // PUBLIC
                         .requestMatchers(publicUris).permitAll()
 
-                        // USER creates garage
+                        // USER → create garage
                         .requestMatchers(HttpMethod.POST, "/api/v1/garage")
                         .hasAnyRole("USER", "ADMIN")
 
-                        // GARAGE OWNER updates garage
+                        // GARAGE OWNER → update garage
                         .requestMatchers(HttpMethod.PUT, "/api/v1/garage/**")
-                        .hasAnyRole("GARAGE_OWNER", "ADMIN")
+                        .hasAnyRole("GARAGE", "ADMIN")
 
-                        // Public garage listing
+                        // PUBLIC garage list
                         .requestMatchers(HttpMethod.GET, "/api/v1/garages/**")
                         .permitAll()
 
-                        // ADMIN garage approval
+                        // ADMIN
                         .requestMatchers("/api/v1/admin/**")
                         .hasRole("ADMIN")
 
                         .anyRequest().authenticated()
                 );
 
-        http.addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
+        http.addFilterBefore(
+                jwtAuthenticationFilter,
+                UsernamePasswordAuthenticationFilter.class
+        );
+
         return http.build();
     }
 
     @Bean
-    public AuthenticationManager authenticationManager(AuthenticationConfiguration config)
-            throws Exception {
+    public AuthenticationManager authenticationManager(
+            AuthenticationConfiguration config
+    ) throws Exception {
         return config.getAuthenticationManager();
     }
 }

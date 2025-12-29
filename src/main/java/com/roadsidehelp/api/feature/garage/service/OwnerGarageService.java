@@ -1,9 +1,6 @@
 package com.roadsidehelp.api.feature.garage.service;
 
-import com.roadsidehelp.api.feature.garage.dto.CreateGarageRequest;
-import com.roadsidehelp.api.feature.garage.dto.GarageDocumentRequest;
-import com.roadsidehelp.api.feature.garage.dto.GarageResponse;
-import com.roadsidehelp.api.feature.garage.dto.UpdateGarageRequest;
+import com.roadsidehelp.api.feature.garage.dto.*;
 
 public interface OwnerGarageService {
 
@@ -16,4 +13,6 @@ public interface OwnerGarageService {
     GarageResponse updateDocuments(String ownerId, GarageDocumentRequest req);
 
     GarageResponse updateOpenStatus(String ownerId, boolean open);
+
+    GarageOwnerStatusResponse getMyGarageStatus(String ownerId);
 }

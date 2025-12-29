@@ -4,10 +4,7 @@ import com.roadsidehelp.api.config.exception.ApiException;
 import com.roadsidehelp.api.config.exception.ErrorCode;
 import com.roadsidehelp.api.feature.auth.entity.UserAccount;
 import com.roadsidehelp.api.feature.auth.repository.UserAccountRepository;
-import com.roadsidehelp.api.feature.garage.dto.CreateGarageRequest;
-import com.roadsidehelp.api.feature.garage.dto.GarageDocumentRequest;
-import com.roadsidehelp.api.feature.garage.dto.GarageResponse;
-import com.roadsidehelp.api.feature.garage.dto.UpdateGarageRequest;
+import com.roadsidehelp.api.feature.garage.dto.*;
 import com.roadsidehelp.api.feature.garage.entity.Garage;
 import com.roadsidehelp.api.feature.garage.entity.GarageStatus;
 import com.roadsidehelp.api.feature.garage.entity.KycStatus;
@@ -123,5 +120,32 @@ public class OwnerGarageServiceImpl implements OwnerGarageService {
 
         garage.setGarageStatus(open ? GarageStatus.OPEN : GarageStatus.CLOSED);
         return garageMapper.toResponse(garage);
+    }
+
+    @Override
+    public GarageOwnerStatusResponse getMyGarageStatus(String ownerId) {
+
+        return garageRepository.findByOwner_Id(ownerId)
+                .map(garage -> new GarageOwnerStatusResponse(
+                        true,
+                        garage.getKycStatus(),
+                        garage.isVerified(),
+                        resolveMessage(garage)
+                ))
+                .orElseGet(() -> new GarageOwnerStatusResponse(
+                        false,
+                        null,
+                        false,
+                        "You have not applied for a garage"
+                ));
+    }
+
+    private String resolveMessage(Garage garage) {
+        return switch (garage.getKycStatus()) {
+            case PENDING -> "Your garage application is under review";
+            case REJECTED -> "Garage rejected: " + garage.getVerificationReason();
+            case APPROVED -> "Garage approved";
+            default -> "Garage status unavailable";
+        };
     }
 }

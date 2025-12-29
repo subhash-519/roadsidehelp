@@ -190,6 +190,8 @@ public class AuthService {
                 .or(() -> userRepo.findByPhoneNumber(username))
                 .orElseThrow(() -> new ApiException(ErrorCode.USER_NOT_FOUND, "User not found"));
 
+        checkAdminRestrictions(user);
+
         otpService.validateOtp(user.getId(), code);
 
         String access = jwtService.generateAccessToken(user.getId(), user.getEmail(), user.getRoles());
@@ -227,6 +229,8 @@ public class AuthService {
                         ErrorCode.USER_NOT_FOUND,
                         "No account found with this email"
                 ));
+
+        checkAdminRestrictions(user);
 
         String token = UUID.randomUUID().toString();
 
@@ -280,6 +284,15 @@ public class AuthService {
                         OffsetDateTime.now(ZoneId.of(TimeZones.INDIA))
                 )) {
             throw new ApiException(ErrorCode.TOKEN_EXPIRED, "Reset token expired");
+        }
+    }
+
+    private void checkAdminRestrictions(UserAccount user) {
+        if (user.getUserType() == UserType.ADMIN) {
+            throw new ApiException(
+                    ErrorCode.ACCESS_DENIED,
+                    "Admin accounts cannot use OTP login or forgot password"
+            );
         }
     }
 }
