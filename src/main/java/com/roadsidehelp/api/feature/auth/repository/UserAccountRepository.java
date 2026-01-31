@@ -25,6 +25,6 @@ public interface UserAccountRepository extends JpaRepository<UserAccount, String
 
     Optional<UserAccount> findByResetPasswordToken(String token);
 
-    // ✅ REQUIRED for auto-cleanup
+    // REQUIRED for auto-cleanup
     List<UserAccount> findByIsVerifiedFalseAndTokenExpirationBefore(OffsetDateTime time);
 }

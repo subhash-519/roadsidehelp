@@ -66,7 +66,6 @@ public class AuthService {
 
         userRepo.save(user);
 
-        // send mail
         emailVerificationService.sendVerification(user);
 
         return new RegisterResponse(
@@ -87,7 +86,6 @@ public class AuthService {
                 .or(() -> userRepo.findByPhoneNumber(identifier))
                 .orElseThrow(() -> new ApiException(ErrorCode.USER_NOT_FOUND, "Invalid credentials"));
 
-        // *** Email verification check ***
         if (!user.isVerified()) {
             throw new ApiException(
                     ErrorCode.EMAIL_NOT_VERIFIED,
@@ -95,12 +93,10 @@ public class AuthService {
             );
         }
 
-        // Password match validation
         if (!passwordEncoder.matches(rawPassword, user.getPasswordHash())) {
             throw new ApiException(ErrorCode.INVALID_CREDENTIALS, "Invalid credentials");
         }
 
-        // Generate tokens
         String access = jwtService.generateAccessToken(user.getId(), user.getEmail(), user.getRoles());
         String refresh = jwtService.generateRefreshToken(user.getId());
 

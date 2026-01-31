@@ -169,6 +169,9 @@
     </dependencies>
 
     <build>
+
+        <finalName>roadsidehelp-api</finalName>
+
         <plugins>
 
             <plugin>

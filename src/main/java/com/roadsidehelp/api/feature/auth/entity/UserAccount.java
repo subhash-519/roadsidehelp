@@ -49,6 +49,7 @@ public class UserAccount extends BaseEntity {
     @Column(name = "phone_number", length = 20, unique = true)
     private String phoneNumber;
 
+    @Builder.Default
     @ElementCollection(fetch = FetchType.EAGER)
     @CollectionTable(name = "user_roles", joinColumns = @JoinColumn(name = "user_id"))
     @Column(name = "role")
@@ -59,6 +60,7 @@ public class UserAccount extends BaseEntity {
     @Column(name = "user_type", nullable = false, length = 30)
     private UserType userType;
 
+    @Builder.Default
     @Column(name = "is_active")
     private boolean active = true;
 
