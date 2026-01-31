@@ -1,4 +1,22 @@
-target/
+# Ignore Git files
 .git
 .gitignore
-node_modules
+
+# Ignore IDE files
+.idea
+*.iml
+.vscode
+
+# Ignore build folders
+target/
+out/
+
+# Logs
+*.log
+
+# Environment variables
+.env
+
+# OS files
+.DS_Store
+Thumbs.db

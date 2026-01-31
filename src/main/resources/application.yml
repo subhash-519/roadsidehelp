@@ -1,15 +1,17 @@
 server:
-  port: 8080
+  port: ${SERVER_PORT:8080}
   error:
     include-message: always
 
 spring:
+  # ======================
   # EMAIL SMTP
+  # ======================
   mail:
     host: smtp.gmail.com
     port: 587
-    username: absubhash07@gmail.com
-    password: guil rbep tuvz tkcy
+    username: ${MAIL_USERNAME}
+    password: ${MAIL_PASSWORD}
     protocol: smtp
     default-encoding: UTF-8
     properties:
@@ -28,12 +30,14 @@ spring:
   # DATABASE
   # ======================
   datasource:
-    url: jdbc:mysql://localhost:3306/roadsidehelp?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
-    username: root
-    password: Ab@128900
+    url: ${DB_URL}
+    username: ${DB_USERNAME}
+    password: ${DB_PASSWORD}
     driver-class-name: com.mysql.cj.jdbc.Driver
 
+  # ======================
   # JPA / HIBERNATE
+  # ======================
   jpa:
     open-in-view: false
     show-sql: false
@@ -44,24 +48,29 @@ spring:
         format_sql: true
         jdbc:
           time_zone: UTC
-        # dialect: org.hibernate.dialect.MySQLDialect
 
+  # ======================
   # FLYWAY
+  # ======================
   flyway:
     enabled: true
     baseline-on-migrate: true
     locations: classpath:db/migration
 
+  # ======================
   # REDIS
+  # ======================
   data:
     redis:
-      host: localhost
-      port: 6379
+      host: ${REDIS_HOST}
+      port: ${REDIS_PORT}
       timeout: 2000ms
 
+  # ======================
   # KAFKA
+  # ======================
   kafka:
-    bootstrap-servers: localhost:9092
+    bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS}
     producer:
       retries: 3
       batch-size: 16384
@@ -70,34 +79,44 @@ spring:
     consumer:
       auto-offset-reset: earliest
 
+# ======================
 # WEBSOCKET
+# ======================
 websocket:
   message-broker:
     prefix: /topic
   app:
     prefix: /app
 
+# ======================
 # JWT
+# ======================
 jwt:
-  secret: yD8p@3!H9kW4rQ2uZt7#GvC1sN5xP0$FbL8eR6mTqVhYjUo
+  secret: ${JWT_SECRET}
   access-token-validity-seconds: 86400
   refresh-token-validity-days: 30
 
+# ======================
 # CORS
+# ======================
 cors:
-  allowed-origins: http://localhost:5173
+  allowed-origins: ${CORS_ALLOWED_ORIGINS}
   allowed-methods: GET,POST,PUT,PATCH,DELETE,OPTIONS
   allowed-headers: Authorization,Content-Type
   allow-credentials: true
 
+# ======================
 # LOGGING
+# ======================
 logging:
   level:
     root: INFO
     org.springframework: INFO
     org.hibernate: WARN
 
+# ======================
 # SWAGGER / SPRING DOC
+# ======================
 springdoc:
   api-docs:
     enabled: true
