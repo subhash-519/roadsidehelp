@@ -28,7 +28,7 @@ public class EmailVerificationService {
         emailService.send(
                 user.getEmail(),
                 "Verify your account",
-                "Click here to verify: http://localhost:8080/api/v1/auth/verify-email?token="
+                "Click here to verify: http://15.207.82.163:30007/api/v1/auth/verify-email?token="
                         + user.getVerificationToken()
         );
     }
